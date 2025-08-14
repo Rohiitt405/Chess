@@ -41,6 +41,27 @@ io.on("Connecion", (uniqueSocket) => {
             delete players.black;
         }
     });
+
+    uniqueSocket.on("Move", (move) => {
+        try{
+            if(chess.turn() == "W" && uniqueSocket.id != players.white) return;
+            if(chess.turn() == "B" && uniqueSocket.id != players.black) return;
+
+            const result = chess.move(move);
+            if(result){
+                currentPlayer = chess.turn();
+                io.emit("Move", move);
+                io.emit("boardState", chess.fen());
+                // io.emit("GameState", chess.game_over());
+            } else {
+                console.log("Invalid Move", move);
+                uniqueSocket.emit("InvalidMove", move);
+            }
+        } catch(error){
+            console.log(error);
+            uniqueSocket.emit("Invalid move:", move);
+        }
+    });
 });
 
 server.listen(3000, () => {
