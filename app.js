@@ -21,11 +21,25 @@ app.get("/", (req, res) => {
     res.render("index", {title: "Chess Game"});
 });
 
-io.on("connection", (socket) => {
-    console.log("Connected"); 
+io.on("Connecion", (uniqueSocket) => {
+    console.log("connected");
 
-    socket.on("Invitation", () => {
-        io.emit("Invitation Received")
+    if(!players.white){
+        players.white = uniqueSocket.id;
+        uniqueSocket.emit("PlayerRole", "W");
+    } else if(!players.black) {
+        players.black = uniqueSocket.id;
+        uniqueSocket.emit("PlayerRole", "B");
+    } else {
+        uniqueSocket.emit("Spectator Role");
+    }
+
+    uniqueSocket.on("disconnect", () => {
+        if(uniqueSocket.id === players.white) {
+            delete players.white;
+        } else if(uniqueSocket.id === players.black) {
+            delete players.black;
+        }
     });
 });
 
